@@ -1,6 +1,7 @@
 # db_utils.py
 import os  
 import sqlite3
+from collections import namedtuple
 
 # create a default path to connect to and create (if necessary) a database
 # called 'database.sqlite3' in the same directory as this script
@@ -31,19 +32,20 @@ def save_post(post):
         con.commit()
 
 def save_request(comment):
+    save_user(comment.author.name)
+
+    Post = namedtuple('Post', 'id url')
+    post = Post(comment.link_id, comment.link_permalink)
+    save_post(post)
+
     con = db_connect()
     cur = con.cursor()
-    query = 'SELECT EXISTS(SELECT 1 FROM users WHERE username=? collate NOCASE) LIMIT 1'
-    check = cur.execute(query, comment.author.name)
+    query = 'SELECT EXISTS(SELECT 1 FROM comments WHERE id=?) LIMIT 1'
+    check = cur.execute(query, [post.id])
     if check.fetchone()[0] == 0:
-        save_user(comment.author.name)
-
-    print(comment.body)
-    print(comment.author.name)
-    print(comment.permalink)
-    print(comment.link_permalink)
-    print(comment.name)
-    print(comment.parent_id)
+        post_sql = 'INSERT INTO comments (id, url, date, content, user, parent, parent_comment) VALUES (?, ?, ?, ?, ?, ?)'
+        cur.execute(post_sql, (comment.name, comment.permalink, comment.created_utc, comment.body, comment.author.name, comment.parent_id, comment.link_id))
+        con.commit()
     return
 
 def validate_request(comment):

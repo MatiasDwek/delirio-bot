@@ -18,12 +18,11 @@ comment_sql = """
 CREATE TABLE comments (
     id text PRIMARY KEY,
 	url text NOT NULL,
-    date text,
+    date text NOT NULL,
 	content text NOT NULL,
 	user text NOT NULL,
-    parent_user text NOT NULL,
+    parent text NOT NULL,
     parent_post text NOT NULL,
 	FOREIGN KEY (user) REFERENCES users (username),
-    FOREIGN KEY (parent_user) REFERENCES users (username),
     FOREIGN KEY (parent_post) REFERENCES posts (id))"""
 cur.execute(comment_sql)
