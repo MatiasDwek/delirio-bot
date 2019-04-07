@@ -4,25 +4,33 @@ cur = con.cursor() # instantiate a cursor obj
 
 users_sql = """
 CREATE TABLE users (
-    username text PRIMARY KEY,
-    UNIQUE (username COLLATE NOCASE))"""
+  username text PRIMARY KEY,
+  UNIQUE (username COLLATE NOCASE))"""
 cur.execute(users_sql)
+
+subreddits_sql = """
+CREATE TABLE subreddits (
+  name text PRIMARY KEY,
+  UNIQUE (name COLLATE NOCASE))"""
+cur.execute(subreddits_sql)
 
 posts_sql = """  
 CREATE TABLE posts (
-    id text PRIMARY KEY,
-    url text NOT NULL)"""
+  id text PRIMARY KEY,
+  url text NOT NULL,
+  subreddit text NOT NULL,
+  FOREIGN KEY (subreddit) REFERENCES name (subreddits))"""
 cur.execute(posts_sql)
 
-comment_sql = """
+comments_sql = """
 CREATE TABLE comments (
-    id text PRIMARY KEY,
-	url text NOT NULL,
-    date text NOT NULL,
-	content text NOT NULL,
-	user text NOT NULL,
-    parent text NOT NULL,
-    parent_post text NOT NULL,
-	FOREIGN KEY (user) REFERENCES users (username),
-    FOREIGN KEY (parent_post) REFERENCES posts (id))"""
-cur.execute(comment_sql)
+  id text PRIMARY KEY,
+  url text NOT NULL,
+  date text NOT NULL,
+  content text NOT NULL,
+  user text NOT NULL,
+  parent text NOT NULL,
+  parent_post text NOT NULL,
+  FOREIGN KEY (user) REFERENCES users (username),
+  FOREIGN KEY (parent_post) REFERENCES posts (id))"""
+cur.execute(comments_sql)

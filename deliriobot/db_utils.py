@@ -21,21 +21,32 @@ def save_user(username):
         cur.execute(username_sql, [username])
         con.commit()
 
+def save_subreddit(subreddit):
+    con = db_connect()
+    cur = con.cursor()
+    query = 'SELECT EXISTS(SELECT 1 FROM subreddits WHERE name=?) LIMIT 1'
+    check = cur.execute(query, [subreddit])
+    if check.fetchone()[0] == 0:
+        post_sql = 'INSERT INTO subreddits (name) VALUES (?)'
+        cur.execute(post_sql, [subreddit])
+        con.commit()
+
 def save_post(post):
     con = db_connect()
     cur = con.cursor()
     query = 'SELECT EXISTS(SELECT 1 FROM posts WHERE id=?) LIMIT 1'
     check = cur.execute(query, [post.id])
     if check.fetchone()[0] == 0:
-        post_sql = 'INSERT INTO posts (id, url) VALUES (?, ?)'
+        post_sql = 'INSERT INTO posts (id, url, subreddit) VALUES (?, ?, ?)'
         cur.execute(post_sql, post)
         con.commit()
 
 def save_request(comment):
     save_user(comment.author.name)
+    save_subreddit(comment.subreddit.display_name)
 
-    Post = namedtuple('Post', 'id url')
-    post = Post(comment.link_id, comment.link_permalink)
+    Post = namedtuple('Post', 'id url subreddit')
+    post = Post(comment.link_id, comment.link_permalink, comment.subreddit.display_name)
     save_post(post)
 
     con = db_connect()
@@ -43,8 +54,8 @@ def save_request(comment):
     query = 'SELECT EXISTS(SELECT 1 FROM comments WHERE id=?) LIMIT 1'
     check = cur.execute(query, [post.id])
     if check.fetchone()[0] == 0:
-        post_sql = 'INSERT INTO comments (id, url, date, content, user, parent, parent_comment) VALUES (?, ?, ?, ?, ?, ?)'
-        cur.execute(post_sql, (comment.name, comment.permalink, comment.created_utc, comment.body, comment.author.name, comment.parent_id, comment.link_id))
+        comment_sql = 'INSERT INTO comments (id, url, date, content, user, parent, parent_post) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        cur.execute(comment_sql, (comment.name, comment.permalink, comment.created_utc, comment.body, comment.author.name, comment.parent_id, comment.link_id))
         con.commit()
     return
 
