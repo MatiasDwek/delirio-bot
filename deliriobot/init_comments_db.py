@@ -31,6 +31,7 @@ CREATE TABLE comments (
   user text NOT NULL,
   parent text NOT NULL,
   parent_post text NOT NULL,
+  should_reply text CHECK(should_reply IN ('TRUE','FALSE','IGNORE')) NOT NULL DEFAULT 'TRUE',
   FOREIGN KEY (user) REFERENCES users (username),
   FOREIGN KEY (parent_post) REFERENCES posts (id))"""
 cur.execute(comments_sql)

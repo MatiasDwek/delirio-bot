@@ -6,11 +6,13 @@ from deliriobot.db_utils import *
 
 reddit = praw.Reddit('delirio-bot')
 
-subreddit = reddit.subreddit("argentina")
+subreddit = reddit.subreddit("pythonforengineers")
 
-for comment in subreddit.stream.comments():
-
-    if re.match("!delirio", comment.body, re.IGNORECASE):
-        pass
-        # if (validate_request(comment)):
-        #     print("a delirio image")
+while True:
+    for comment in subreddit.stream.comments():
+        save_request(comment)
+        print(type(comment.subreddit.display_name))
+        if re.match("!delirio", comment.body, re.IGNORECASE):
+            pass
+            # if (validate_request(comment)):
+            #     print("a delirio image")

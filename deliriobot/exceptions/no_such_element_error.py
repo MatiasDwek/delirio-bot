@@ -1,0 +1,2 @@
+class NoSuchElementError(ValueError):
+    pass
