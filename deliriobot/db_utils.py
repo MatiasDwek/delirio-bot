@@ -63,7 +63,7 @@ def save_request(comment):
 
 def set_comment_should_reply(comment_id, state):
     if not ('TRUE', 'FALSE', 'IGNORE').__contains__(state):
-        raise ValueError("State must be either TRUE, FALSE or IGNORE")
+        raise ValueError('State must be either TRUE, FALSE or IGNORE')
 
     con = db_connect()
     cur = con.cursor()
