@@ -26,7 +26,7 @@ comments_sql = """
 CREATE TABLE comments (
   id text PRIMARY KEY,
   url text NOT NULL,
-  date text NOT NULL,
+  date real NOT NULL,
   content text NOT NULL,
   user text NOT NULL,
   parent text NOT NULL,
