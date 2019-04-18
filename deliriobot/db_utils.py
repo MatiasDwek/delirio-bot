@@ -77,4 +77,15 @@ def set_comment_should_reply(comment_id, state):
     con.commit()
 
 def validate_request(comment):
-    return True
+    con = db_connect()
+    cur = con.cursor()
+    query = "SELECT MAX(date) FROM comments WHERE user = ? AND should_reply <> \'TRUE\'"
+    cur.execute(query, (comment.author.name,))
+    last_user_request_date = cur.fetchone()[0]
+    if last_user_request_date is None:
+        last_user_request_date = 0
+    delta_time = comment.created_utc - last_user_request_date
+    if delta_time < 43200.0:
+        return False
+    else:
+        return True
