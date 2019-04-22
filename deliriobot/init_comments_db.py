@@ -1,4 +1,5 @@
 from deliriobot.db_utils import db_connect
+
 con = db_connect() # connect to the database
 cur = con.cursor() # instantiate a cursor obj
 

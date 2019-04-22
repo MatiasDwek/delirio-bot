@@ -2,7 +2,8 @@
 import praw
 import re
 import random
-from deliriobot.db_utils import *
+
+from deliriobot.comments_db_utils import *
 
 properties = dict()
 properties['answer_wait'] = 120.0 # 2 minutes
