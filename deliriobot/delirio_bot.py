@@ -2,8 +2,30 @@
 
 import praw
 import re
+import random
 
 from deliriobot.comments_db_utils import *
+
+def random_line(file_name):
+    file = open(file_name, mode="r", encoding="utf-8")
+    line = next(file)
+    for num, aline in enumerate(file, 2):
+      if random.randrange(num): continue
+      line = aline
+    return line
+
+def generate_reply():
+    con_img = db_connect(os.path.join(os.path.dirname(__file__), 'images.sqlite3'))
+    cur_img = con_img.cursor()
+    cur_img.execute('SELECT * FROM images ORDER BY RANDOM() LIMIT 1') # Select random image from image database
+    reply = "[{0}](https://i.imgur.com/{1}.jpg)\n\n" \
+            "&nbsp;\n" \
+            "- - - - - -\n" \
+            "^*DelirioBot* ^- " \
+            "[^Source ^code](https://github.com/MatiasDwek/delirio-bot/tree/master/deliriobot)" \
+            .format(random_line("../delirio-bot-data/replies.txt"), cur_img.fetchone()[0])
+
+    return reply
 
 def main():
     properties = dict()
@@ -12,13 +34,15 @@ def main():
 
     reddit = praw.Reddit('delirio-bot')
 
-    subreddits = ['Argentinacirclejerk', 'argentina', 'republicaargentina']
+    # subreddits = ['Argentinacirclejerk', 'argentina', 'republicaargentina']
+    subreddits = ['pythonforengineers']
     all_subreddits = reddit.subreddit('+'.join(subreddits))
 
     con = db_connect()
     cur = con.cursor()
 
     for comment in all_subreddits.stream.comments():
+        print(comment.body)
         if re.match("!delirio", comment.body, re.IGNORECASE):
             cur.execute("SELECT count(*) FROM comments WHERE id = ?", (comment.name,))
             if cur.fetchone()[0] == 0:
@@ -35,6 +59,7 @@ def main():
                     # Before posting a reply, ask if the bot is posting replies.txt too often
                     if delta_time > properties['answer_wait']:
                         # Post reply
+                        comment.reply(generate_reply())
                         print('Here goes the reply to comment {}'.format(comment.body))
                         # After posting reply, save it in the db
                 else:
