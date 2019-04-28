@@ -70,6 +70,8 @@ def set_comment_should_reply(comment_id, state):
 def validate_request(comment):
     con = db_connect()
     cur = con.cursor()
+
+    # Check if the user is posting requests too often
     query = "SELECT MAX(date) FROM comments WHERE user = ? AND should_reply <> \'TRUE\'"
     cur.execute(query, (comment.author.name,))
     last_user_request_date = cur.fetchone()[0]
@@ -78,5 +80,13 @@ def validate_request(comment):
     delta_time = comment.created_utc - last_user_request_date
     if delta_time < 43200.0:
         return False
-    else:
-        return True
+
+    # Check if the post title contains a serious tag
+    cur.execute('SELECT title FROM posts WHERE id = ?', (comment.link_id,))
+    post_title = cur.fetchone()[0]
+    serious_tags = ['serio', 'serious', 'enserio']
+    serious_tags_lower = [x.lower() for x in serious_tags]
+    if any(x in post_title.lower() for x in serious_tags_lower):
+        return False
+
+    return True
