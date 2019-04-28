@@ -46,7 +46,7 @@ def main():
         if re.match("!delirio", comment.body, re.IGNORECASE):
             cur.execute("SELECT count(*) FROM comments WHERE id = ?", (comment.name,))
             if cur.fetchone()[0] == 0:
-                save_request(comment)
+                save_request(comment, reddit)
 
             cur.execute('SELECT should_reply FROM comments WHERE id = ?', (comment.name,))
             if cur.fetchone()[0] == 'TRUE':

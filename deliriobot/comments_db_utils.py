@@ -29,16 +29,16 @@ def save_post(post):
     query = 'SELECT EXISTS(SELECT 1 FROM posts WHERE id=?) LIMIT 1'
     check = cur.execute(query, [post.id])
     if check.fetchone()[0] == 0:
-        post_sql = 'INSERT INTO posts (id, url, subreddit) VALUES (?, ?, ?)'
+        post_sql = 'INSERT INTO posts (id, url, title, subreddit) VALUES (?, ?, ?, ?)'
         cur.execute(post_sql, post)
         con.commit()
 
-def save_request(comment):
+def save_request(comment, reddit):
     save_user(comment.author.name)
     save_subreddit(comment.subreddit.display_name)
 
-    Post = namedtuple('Post', 'id url subreddit')
-    post = Post(comment.link_id, comment.link_permalink, comment.subreddit.display_name)
+    Post = namedtuple('Post', 'id url title subreddit')
+    post = Post(comment.link_id, comment.link_permalink, reddit.submission(id=comment.link_id[3:]).title, comment.subreddit.display_name)
     save_post(post)
 
     con = db_connect()

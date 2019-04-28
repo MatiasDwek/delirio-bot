@@ -19,6 +19,7 @@ posts_sql = """
 CREATE TABLE posts (
   id text PRIMARY KEY,
   url text NOT NULL,
+  title text NOT NULL,
   subreddit text NOT NULL,
   FOREIGN KEY (subreddit) REFERENCES name (subreddits))"""
 cur.execute(posts_sql)
