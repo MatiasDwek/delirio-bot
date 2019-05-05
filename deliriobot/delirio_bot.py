@@ -37,7 +37,7 @@ class DelirioBot:
                 "- - - - - -\n" \
                 "^*DelirioBot* ^- " \
                 "[^Source ^code](https://github.com/MatiasDwek/delirio-bot/tree/master/deliriobot)" \
-                .format(self.random_line("../delirio-bot-data/replies.txt"), self.random_line('deliriobot/imgur_links.txt'))
+                .format(self.random_line("deliriobot/replies.txt"), self.random_line('deliriobot/imgur_links.txt'))
 
         return reply
 
