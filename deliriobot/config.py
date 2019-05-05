@@ -4,5 +4,7 @@ DELIRIO_CONFIG = {
     'user_wait_time': 43200.0, # 12 hours, in seconds
     'ignored_tags': ['serio', 'serious', 'enserio'],
     'bot_name': 'DelirioBot',
-    'keyword': '!delirio'
+    'keyword': '!delirio',
+    'logging_path': 'delirio.log',
+    'db_path' : 'delirio.sqlite3'
 }
