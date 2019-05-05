@@ -50,7 +50,8 @@ class DelirioBot:
                 # Post reply
                 try:
                     print('Here goes the reply to comment {}'.format(comment.body))
-                    comment.reply(self.generate_reply())
+                    # comment.reply(self.generate_reply())
+                    print(self.generate_reply())
                     self.cur.execute('UPDATE comments SET should_reply = \'FALSE\' WHERE id=?', [comment.name])
                     self.con.commit()
 
