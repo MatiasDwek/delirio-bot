@@ -4,9 +4,9 @@ import praw
 import re
 import random
 import time
-import argparse
 
 from deliriobot.delirio_db_utils import *
+from deliriobot.config import *
 
 class DelirioBot:
 
@@ -67,7 +67,7 @@ class DelirioBot:
         reddit = praw.Reddit('delirio-bot')
         selected_subreddits = reddit.subreddit('+'.join(self.subreddits))
         for comment in selected_subreddits.stream.comments():
-            if re.match("!delirio", comment.body, re.IGNORECASE):
+            if re.match(DELIRIO_CONFIG['keyword'], comment.body, re.IGNORECASE):
                 self.cur.execute("SELECT count(*) FROM comments WHERE id = ?", (comment.name,))
                 if self.cur.fetchone()[0] == 0:
                     save_request(comment, reddit)
@@ -79,6 +79,5 @@ class DelirioBot:
                     print('The request from {} does not need a reply'.format(comment.name))
 
 if __name__ == '__main__':
-    # ['Argentinacirclejerk', 'argentina', 'republicaargentina']
-    delirio_bot = DelirioBot(['pythonforengineers'])
+    delirio_bot = DelirioBot(DELIRIO_CONFIG['subreddits'], DELIRIO_CONFIG['reply_wait_time'])
     delirio_bot.loop()

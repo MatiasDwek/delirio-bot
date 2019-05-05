@@ -2,6 +2,7 @@ from collections import namedtuple
 
 from deliriobot.exceptions.no_such_element_error import *
 from deliriobot.db_utils import *
+from deliriobot.config import *
 
 __con__ = db_connect()
 __cur__ = __con__.cursor()
@@ -42,7 +43,7 @@ def save_request(comment, reddit):
     check = __cur__.execute(query, [post.id])
     if check.fetchone()[0] == 0:
         comment_sql = 'INSERT INTO comments (id, url, date, content, user, parent, parent_post, should_reply) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-        should_reply = 'IGNORE' if comment.author.name == "DelirioBot" else 'TRUE'
+        should_reply = 'IGNORE' if comment.author.name == DELIRIO_CONFIG['bot_name'] else 'TRUE' # avoid replying to the bot itself, some response may contain the call keyword
         __cur__.execute(comment_sql, (comment.name, comment.permalink, comment.created_utc, comment.body, comment.author.name, comment.parent_id, comment.link_id, should_reply))
         __con__.commit()
     return
@@ -67,13 +68,13 @@ def validate_request(comment):
     if last_user_request_date is None:
         last_user_request_date = 0
     delta_time = comment.created_utc - last_user_request_date
-    if delta_time < 43200.0:
+    if delta_time < DELIRIO_CONFIG['user_wait_time']:
         return False
 
     # Check if the post title contains a serious tag
     __cur__.execute('SELECT title FROM posts WHERE id = ?', (comment.link_id,))
     post_title = __cur__.fetchone()[0]
-    serious_tags = ['serio', 'serious', 'enserio']
+    serious_tags = DELIRIO_CONFIG['ignored_tags']
     serious_tags_lower = [x.lower() for x in serious_tags]
     if any(x in post_title.lower() for x in serious_tags_lower):
         return False
