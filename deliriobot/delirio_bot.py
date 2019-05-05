@@ -32,15 +32,12 @@ class DelirioBot:
         return line
 
     def generate_reply(self):
-        con_img = db_connect(os.path.join(os.path.dirname(__file__), 'images.sqlite3'))
-        cur_img = con_img.cursor()
-        cur_img.execute('SELECT * FROM images ORDER BY RANDOM() LIMIT 1') # Select random image from image database
         reply = "[{0}](https://i.imgur.com/{1})\n\n" \
                 "&nbsp;\n" \
                 "- - - - - -\n" \
                 "^*DelirioBot* ^- " \
                 "[^Source ^code](https://github.com/MatiasDwek/delirio-bot/tree/master/deliriobot)" \
-                .format(self.random_line("../delirio-bot-data/replies.txt"), cur_img.fetchone()[0])
+                .format(self.random_line("../delirio-bot-data/replies.txt"), self.random_line('deliriobot/imgur_links.txt'))
 
         return reply
 
@@ -50,7 +47,8 @@ class DelirioBot:
                 # Post reply
                 try:
                     print('Here goes the reply to comment {}'.format(comment.body))
-                    comment.reply(self.generate_reply())
+                    # comment.reply(self.generate_reply())
+                    print(self.generate_reply())
                     self.cur.execute('UPDATE comments SET should_reply = \'FALSE\' WHERE id=?', [comment.name])
                     self.con.commit()
 
