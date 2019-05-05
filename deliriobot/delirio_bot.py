@@ -4,24 +4,19 @@ import praw
 import re
 import random
 import time
+import argparse
 
-from deliriobot.comments_db_utils import *
+from deliriobot.delirio_db_utils import *
 
 class DelirioBot:
 
-    def __init__(self):
-        self.properties = dict()
-        self.properties['answer_wait'] = 120.0  # 2 minutes (in seconds)
-
-        # self.subreddits = ['Argentinacirclejerk', 'argentina', 'republicaargentina']
-        self.subreddits = ['pythonforengineers']
+    def __init__(self, subreddits, default_wait = 120.0):
+        self.default_wait = default_wait
+        self.subreddits = subreddits
+        self.wait_time = self.default_wait
 
         self.con = db_connect()
         self.cur = self.con.cursor()
-
-        self.queue_for_replies = list()
-
-        self.wait_time = self.properties['answer_wait']
 
     def random_line(self, file_name):
         file = open(file_name, mode="r", encoding="utf-8")
@@ -37,7 +32,7 @@ class DelirioBot:
                 "- - - - - -\n" \
                 "^*DelirioBot* ^- " \
                 "[^Source ^code](https://github.com/MatiasDwek/delirio-bot/tree/master/deliriobot)" \
-                .format(self.random_line("deliriobot/replies.txt"), self.random_line('deliriobot/imgur_links.txt'))
+                .format(self.random_line("deliriobot/resources/replies.txt"), self.random_line('deliriobot/resources/imgur_links.txt'))
 
         return reply
 
@@ -47,13 +42,13 @@ class DelirioBot:
                 # Post reply
                 try:
                     print('Here goes the reply to comment {}'.format(comment.body))
-                    # comment.reply(self.generate_reply())
-                    print(self.generate_reply())
+                    comment.reply(self.generate_reply())
+                    # print(self.generate_reply())
                     self.cur.execute('UPDATE comments SET should_reply = \'FALSE\' WHERE id=?', [comment.name])
                     self.con.commit()
 
                     # Reset the default reply wait time
-                    self.wait_time = self.properties['answer_wait']
+                    self.wait_time = self.default_wait
                     break
                 except praw.exceptions.APIException as e:
                     if e.error_type == 'RATELIMIT':
@@ -84,5 +79,6 @@ class DelirioBot:
                     print('The request from {} does not need a reply'.format(comment.name))
 
 if __name__ == '__main__':
-    delirio_bot = DelirioBot()
+    # ['Argentinacirclejerk', 'argentina', 'republicaargentina']
+    delirio_bot = DelirioBot(['pythonforengineers'])
     delirio_bot.loop()

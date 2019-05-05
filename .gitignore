@@ -1,4 +1,4 @@
 deliriobot/praw.ini
-deliriobot/database.sqlite3
+deliriobot/delirio.sqlite3
 deliriobot/delirios_imgur_albums.txt
 __pycache__
