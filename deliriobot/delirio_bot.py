@@ -32,7 +32,7 @@ class DelirioBot:
                 "&nbsp;\n" \
                 "- - - - - -\n" \
                 "^*DelirioBot* ^- " \
-                "[^Source ^code](https://github.com/MatiasDwek/delirio-bot/tree/master/deliriobot)" \
+                "[^Source ^code ](https://github.com/MatiasDwek/delirio-bot/tree/master)" \
                 .format(self.random_line("deliriobot/resources/replies.txt"), self.random_line('deliriobot/resources/imgur_links.txt'))
 
         return reply
@@ -52,13 +52,15 @@ class DelirioBot:
                     break
                 except praw.exceptions.APIException as e:
                     if e.error_type == 'RATELIMIT':
-                        string_minutes = re.search(r'try again in (.*) minutes', e.message)
+                        string_minutes = re.search(r'try again in (.*) minute', e.message)
                         if string_minutes is None:
                             self.wait_time = 10 * 60 # wait for 10 minutes
                         else:
                             self.wait_time = (int(string_minutes.group(1)) + 1) * 60
-                        logging.warning('Bot is rate limited, waiting {0} seconds to reply. Reddit message was {1}'.format(self.wait_time, e.message))
+                        logging.warning('Bot is rate limited, waiting {0} seconds to reply. Reddit message was \'{1}\''.format(self.wait_time, e.message))
                         time.sleep(self.wait_time)
+                    elif e.error_type == 'DELETED_COMMENT':
+                        logging.info('Comment {} was deleted, skipping reply'.format(comment.name))
         else:
             self.cur.execute('UPDATE comments SET should_reply = \'IGNORE\' WHERE id=?', [comment.name])
             self.con.commit()
@@ -78,7 +80,7 @@ class DelirioBot:
                 if self.cur.fetchone()[0] == 'TRUE':
                     self.reply(comment)
                 else:
-                    logging.info('The request from {} does not need a reply'.format(comment.name))
+                    logging.info('The request {0} from  {1} does not need a reply'.format(comment.name, comment.author.name))
 
 if __name__ == '__main__':
     logging.basicConfig(filename=DELIRIO_CONFIG['logging_path'],
