@@ -66,8 +66,9 @@ class DelirioBot:
     def loop(self):
         reddit = praw.Reddit('delirio-bot')
         selected_subreddits = reddit.subreddit('+'.join(self.subreddits))
+
         for comment in selected_subreddits.stream.comments():
-            if re.match(DELIRIO_CONFIG['keyword'], comment.body, re.IGNORECASE):
+            if re.match(Config.TRIGGER_WORD, comment.body, re.IGNORECASE):
                 self.db.save_request(comment, reddit)
                 if self.db.get_comment_state(comment.name) == 'TRUE':
                     self.reply(comment)
@@ -75,12 +76,12 @@ class DelirioBot:
                     logging.info('The request {0} from {1} does not need a reply'.format(comment.name, comment.author.name))
 
 if __name__ == '__main__':
-    logging.basicConfig(filename=DELIRIO_CONFIG['logging_path'],
+    logging.basicConfig(filename=Config.LOGGING_PATH,
                         filemode='a',
                         format='%(asctime)s,%(msecs)d %(name)s %(levelname)s - %(message)s',
                         datefmt='%H:%M:%S',
                         level=logging.INFO)
 
     logging.info('Starting bot...')
-    delirio_bot = DelirioBot(DELIRIO_CONFIG['subreddits'], DELIRIO_CONFIG['reply_wait_time'])
+    delirio_bot = DelirioBot(Config.SUBREDDITS, Config.REPLY_WAIT_TIME)
     delirio_bot.loop()

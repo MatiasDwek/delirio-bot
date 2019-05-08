@@ -1,10 +1,10 @@
-DELIRIO_CONFIG = {
-    'subreddits': ['pythonforengineers', 'testabot'], # ['Argentinacirclejerk', 'argentina', 'republicaargentina']
-    'reply_wait_time': 120.0, # 2 minutes, in seconds
-    'user_wait_time': 43200.0, # 12 hours, in seconds
-    'ignored_tags': ['serio', 'serious', 'enserio'],
-    'bot_name': 'DelirioBot',
-    'keyword': '!delirio',
-    'logging_path': 'delirio.log',
-    'db_path' : 'delirio.sqlite3'
-}
+class Config:
+    """ Holds all the configurations for the bot """
+    SUBREDDITS = ['pythonforengineers', 'testabot'] # ['Argentinacirclejerk', 'argentina', 'republicaargentina']
+    REPLY_WAIT_TIME = 120.0 # 2 minutes, in seconds
+    USER_WAIT_TIME = 43200.0 # 12 hours, in seconds
+    IGNORED_TAGS = ['serio', 'serious', 'enserio']
+    BOT_NAME = 'DelirioBot'
+    TRIGGER_WORD = '!delirio'
+    LOGGING_PATH = 'delirio.log'
+    DATABASE_PATH = 'delirio.sqlite3'

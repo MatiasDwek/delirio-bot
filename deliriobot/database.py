@@ -11,7 +11,7 @@ class Database:
     def __init__(self):
         # create a default path to connect to and create (if necessary) a database
         # called 'database.sqlite3' in the same directory as this script
-        db_path = os.path.join(os.path.dirname(__file__), DELIRIO_CONFIG['db_path'])
+        db_path = os.path.join(os.path.dirname(__file__), Config.DATABASE_PATH)
         self.con = sqlite3.connect(db_path)
         self.cur = self.con.cursor()
     
@@ -59,7 +59,7 @@ class Database:
         check = self.cur.execute(query, [post.id])
         if check.fetchone()[0] == 0:
             comment_sql = 'INSERT INTO comments (id, url, date, content, user, parent, parent_post, should_reply) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-            should_reply = 'IGNORE' if comment.author.name == DELIRIO_CONFIG['bot_name'] else 'TRUE' # avoid replying to the bot itself, some response may contain the call keyword
+            should_reply = 'IGNORE' if comment.author.name == Config.BOT_NAME else 'TRUE' # avoid replying to the bot itself, some response may contain the call keyword
             self.cur.execute(comment_sql, (comment.name, comment.permalink, comment.created_utc, comment.body, comment.author.name, comment.parent_id, comment.link_id, should_reply))
             self.con.commit()
             logging.info('Saved request {}'.format(comment.name))
@@ -80,7 +80,7 @@ class Database:
         query = 'UPDATE comments SET should_reply = \'{}\' WHERE id=?'.format(state)
         self.cur.execute(query, [comment_id])
         self.con.commit()
-        logging.info('Set comment {0} to should reply state to {1}'.format(comment_id, state))
+        logging.info('Set comment {0} should reply state to {1}'.format(comment_id, state))
     
     def validate_request(self, comment):
         # Check if the user is posting requests too often
@@ -90,14 +90,14 @@ class Database:
         if last_user_request_date is None:
             last_user_request_date = 0
         delta_time = comment.created_utc - last_user_request_date
-        if delta_time < DELIRIO_CONFIG['user_wait_time']:
+        if delta_time < Config.USER_WAIT_TIME:
             logging.info('Request {} refused due to querying too often'.format(comment.link_id))
             return False
     
         # Check if the post title contains an ignore tag
         self.cur.execute('SELECT title FROM posts WHERE id = ?', (comment.link_id,))
         post_title = self.cur.fetchone()[0]
-        serious_tags = DELIRIO_CONFIG['ignored_tags']
+        serious_tags = Config.IGNORED_TAGS
         serious_tags_lower = [x.lower() for x in serious_tags]
         if any(x in post_title.lower() for x in serious_tags_lower):
             logging.info('Request {} refused due post being ignored'.format(comment.link_id))
