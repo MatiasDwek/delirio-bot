@@ -6,7 +6,7 @@ import random
 import time
 import logging
 
-from deliriobot.delirio_db_utils import *
+from deliriobot.database import *
 from deliriobot.config import *
 
 class DelirioBot:
@@ -15,9 +15,7 @@ class DelirioBot:
         self.default_wait = default_wait
         self.subreddits = subreddits
         self.wait_time = self.default_wait
-
-        self.con = db_connect()
-        self.cur = self.con.cursor()
+        self.db = Database()
 
     def random_line(self, file_name):
         file = open(file_name, mode="r", encoding="utf-8")
@@ -38,14 +36,13 @@ class DelirioBot:
         return reply
 
     def reply(self, comment):
-        if validate_request(comment):
+        if self.db.validate_request(comment):
             while 1:
                 # Post reply
                 try:
                     comment.reply(self.generate_reply())
                     logging.info('Replied to comment from {0} with body \'{1}\''.format(comment.author.name, comment.body))
-                    self.cur.execute('UPDATE comments SET should_reply = \'FALSE\' WHERE id=?', [comment.name])
-                    self.con.commit()
+                    self.db.set_comment_state(comment.name, 'FALSE')
 
                     # Reset the default reply wait time
                     self.wait_time = self.default_wait
@@ -63,30 +60,24 @@ class DelirioBot:
                         logging.info('Comment {} was deleted, skipping reply'.format(comment.name))
                         break
         else:
-            self.cur.execute('UPDATE comments SET should_reply = \'IGNORE\' WHERE id=?', [comment.name])
-            self.con.commit()
+            self.db.set_comment_state(comment.name, 'IGNORE')
             logging.info('Received an invalid request')
-
 
     def loop(self):
         reddit = praw.Reddit('delirio-bot')
         selected_subreddits = reddit.subreddit('+'.join(self.subreddits))
         for comment in selected_subreddits.stream.comments():
             if re.match(DELIRIO_CONFIG['keyword'], comment.body, re.IGNORECASE):
-                self.cur.execute("SELECT count(*) FROM comments WHERE id = ?", (comment.name,))
-                if self.cur.fetchone()[0] == 0:
-                    save_request(comment, reddit)
-
-                self.cur.execute('SELECT should_reply FROM comments WHERE id = ?', (comment.name,))
-                if self.cur.fetchone()[0] == 'TRUE':
+                self.db.save_request(comment, reddit)
+                if self.db.get_comment_state(comment.name) == 'TRUE':
                     self.reply(comment)
                 else:
-                    logging.info('The request {0} from  {1} does not need a reply'.format(comment.name, comment.author.name))
+                    logging.info('The request {0} from {1} does not need a reply'.format(comment.name, comment.author.name))
 
 if __name__ == '__main__':
     logging.basicConfig(filename=DELIRIO_CONFIG['logging_path'],
                         filemode='a',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s - %(message)s',
                         datefmt='%H:%M:%S',
                         level=logging.INFO)
 
