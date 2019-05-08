@@ -61,6 +61,7 @@ class DelirioBot:
                         time.sleep(self.wait_time)
                     elif e.error_type == 'DELETED_COMMENT':
                         logging.info('Comment {} was deleted, skipping reply'.format(comment.name))
+                        break
         else:
             self.cur.execute('UPDATE comments SET should_reply = \'IGNORE\' WHERE id=?', [comment.name])
             self.con.commit()
