@@ -58,7 +58,12 @@ class DelirioBot:
                         logging.warning('Bot is rate limited, waiting {0} seconds to reply. Reddit message was \'{1}\''.format(self.wait_time, e.message))
                         time.sleep(self.wait_time)
                     elif e.error_type == 'DELETED_COMMENT':
+                        self.db.set_comment_state(comment.name, 'IGNORE')
                         logging.info('Comment {} was deleted, skipping reply'.format(comment.name))
+                        break
+                    else:
+                        self.db.set_comment_state(comment.name, 'IGNORE')
+                        logging.error('Unexpected exception with message {} was caught'.format(e.error_type))
                         break
         else:
             self.db.set_comment_state(comment.name, 'IGNORE')
