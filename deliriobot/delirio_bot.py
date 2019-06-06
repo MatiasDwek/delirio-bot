@@ -5,6 +5,7 @@ import re
 import random
 import time
 import logging
+import logging.handlers
 
 from deliriobot.database import *
 from deliriobot.config import *
@@ -39,7 +40,7 @@ class DelirioBot:
 
     def reply(self, comment):
         if self.db.validate_request(comment):
-            while 1:
+            while True:
                 # Post reply
                 try:
                     comment.reply(self.generate_reply())
@@ -79,12 +80,21 @@ class DelirioBot:
                 else:
                     logging.info('The request {0} from {1} does not need a reply'.format(comment.name, comment.author.name))
 
+def log_setup():
+    log_handler = logging.handlers.RotatingFileHandler(Config.LOGGING_PATH,
+                                                       maxBytes=1024 * 256,
+                                                       backupCount=5)
+    formatter = logging.Formatter(
+        '%(asctime)s [%(process)d] delirio_bot - %(levelname)s - %(message)s',
+        '%b %d %H:%M:%S')
+    formatter.converter = time.gmtime  # if you want UTC time
+    log_handler.setFormatter(formatter)
+    logger = logging.getLogger()
+    logger.addHandler(log_handler)
+    logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
-    logging.basicConfig(filename=Config.LOGGING_PATH,
-                        filemode='a',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s - %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.INFO)
+    log_setup()
 
     reddit = praw.Reddit(client_id=Config.CLIENT_ID,
                          client_secret=Config.CLIENT_SECRET,
