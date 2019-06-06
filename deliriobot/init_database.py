@@ -1,6 +1,8 @@
-from deliriobot.db_utils import db_connect
+from deliriobot.config import *
+import sqlite3
 
-__con__ = db_connect() # connect to the database
+db_path = os.path.join(os.path.dirname(__file__), Config.DATABASE_PATH)
+__con__ = sqlite3.connect(db_path) # connect to the database
 __cur__ = __con__.cursor() # instantiate a cursor obj
 
 users_sql = """

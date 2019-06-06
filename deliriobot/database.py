@@ -1,6 +1,5 @@
 from collections import namedtuple
 import logging
-import os
 import sqlite3
 
 from deliriobot.exceptions.no_such_element_error import *
