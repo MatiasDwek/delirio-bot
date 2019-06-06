@@ -17,6 +17,7 @@ class DelirioBot:
         self.wait_time = self.default_wait
         self.db = Database()
         self.reddit = reddit
+        self.selected_subreddits = self.reddit.subreddit('+'.join(self.subreddits))
 
     def random_line(self, file_name):
         file = open(file_name, mode="r", encoding="utf-8")
@@ -69,10 +70,8 @@ class DelirioBot:
             self.db.set_comment_state(comment.name, 'IGNORE')
             logging.info('Received an invalid request')
 
-    def loop(self):
-        selected_subreddits = self.reddit.subreddit('+'.join(self.subreddits))
-
-        for comment in selected_subreddits.stream.comments():
+    def loop(self, ):
+        for comment in self.selected_subreddits.stream.comments():
             if re.match(Config.TRIGGER_WORD, comment.body, re.IGNORECASE):
                 self.db.save_request(comment, self.reddit)
                 if self.db.get_comment_state(comment.name) == 'TRUE':
@@ -97,4 +96,16 @@ if __name__ == '__main__':
     delirio_bot = DelirioBot(reddit,
                              Config.SUBREDDITS,
                              Config.REPLY_WAIT_TIME)
-    delirio_bot.loop()
+
+    while True:
+        try:
+            delirio_bot.loop()
+        # Allows the bot to exit on ^C, all other exceptions are ignored
+        except KeyboardInterrupt:
+            break
+        except Exception as e:
+            logging.error('Exception {}'.format(e), exc_info=True)
+
+        logging.info('Sleeping for {} s'.format(Config.BOT_RELOAD_TIME))
+        time.sleep(Config.BOT_RELOAD_TIME)
+

@@ -26,6 +26,7 @@ DelirioBot is configured through the file deliriobot/config.py:
 | USER_WAIT_TIME  | How often a user is allowed to request the bot; if exceeded by a user, the bot ignores the request |
 | BOT_NAME        | The bot's name in Reddit |
 | TRIGGER_WORD    | Word to request the bot |
+| BOT_RELOAD_TIME | Backoff time the bot takes to restart when it encounters an exception |
 
  and through environment variables:
 

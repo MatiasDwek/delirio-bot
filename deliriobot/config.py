@@ -8,6 +8,7 @@ class Config:
     IGNORED_TAGS = ['serio', 'serious', 'enserio']
     BOT_NAME = 'DelirioBot'
     TRIGGER_WORD = '!delirio'
+    BOT_RELOAD_TIME = 600.0 # 10 minutes
 
     DATABASE_PATH = os.environ['DELIRIO_DATABASE_PATH']
     LOGGING_PATH = os.environ['DELIRIO_LOGGING_PATH']
